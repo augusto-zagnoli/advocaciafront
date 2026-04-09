@@ -1,0 +1,39 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Orcamento, CreateOrcamento, PagedResult } from '../models/models';
+import { environment } from '../../../environments/environment';
+
+@Injectable({ providedIn: 'root' })
+export class OrcamentoService {
+  private readonly API = `${environment.apiUrl}/orcamentos`;
+
+  constructor(private http: HttpClient) {}
+
+  solicitar(dto: CreateOrcamento): Observable<any> {
+    return this.http.post(this.API, dto);
+  }
+
+  listar(pagina = 1, tamanho = 10, status?: string, lido?: boolean): Observable<PagedResult<Orcamento>> {
+    let params = new HttpParams().set('pagina', pagina).set('tamanho', tamanho);
+    if (status) params = params.set('status', status);
+    if (lido !== undefined) params = params.set('lido', lido);
+    return this.http.get<PagedResult<Orcamento>>(this.API, { params });
+  }
+
+  obterPorId(id: number): Observable<Orcamento> {
+    return this.http.get<Orcamento>(`${this.API}/${id}`);
+  }
+
+  atualizarStatus(id: number, status: string, lido: boolean): Observable<Orcamento> {
+    return this.http.patch<Orcamento>(`${this.API}/${id}/status`, { status, lido });
+  }
+
+  deletar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API}/${id}`);
+  }
+
+  contarNaoLidos(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.API}/nao-lidos/count`);
+  }
+}
