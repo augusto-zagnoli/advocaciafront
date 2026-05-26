@@ -17,6 +17,12 @@ import { AdminContatosComponent } from './pages/admin/contatos/admin-contatos.co
 import { AdminOrcamentosComponent } from './pages/admin/orcamentos/admin-orcamentos.component';
 import { AdminChatComponent } from './pages/admin/chat/admin-chat.component';
 import { AdminPerfilComponent } from './pages/admin/perfil/admin-perfil.component';
+import { AdminAreasAtuacaoComponent } from './pages/admin/areas-atuacao/admin-areas-atuacao.component';
+import { AdminDepoimentosComponent } from './pages/admin/depoimentos/admin-depoimentos.component';
+import { AdminQuemSomosComponent } from './pages/admin/quem-somos/admin-quem-somos.component';
+import { AdminSobreDoutoraComponent } from './pages/admin/sobre-doutora/admin-sobre-doutora.component';
+import { AdminServicosComponent } from './pages/admin/servicos/admin-servicos.component';
+import { AdminConfiguracoesComponent } from './pages/admin/configuracoes/admin-configuracoes.component';
 
 export const routes: Routes = [
   {
@@ -39,6 +45,12 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'anuncios', component: AdminAnunciosComponent },
+      { path: 'areas-atuacao', component: AdminAreasAtuacaoComponent },
+      { path: 'depoimentos', component: AdminDepoimentosComponent },
+      { path: 'quem-somos', component: AdminQuemSomosComponent },
+      { path: 'sobre-doutora', component: AdminSobreDoutoraComponent },
+      { path: 'servicos', component: AdminServicosComponent },
+      { path: 'configuracoes', component: AdminConfiguracoesComponent },
       { path: 'contatos', component: AdminContatosComponent },
       { path: 'orcamentos', component: AdminOrcamentosComponent },
       { path: 'chat', component: AdminChatComponent },

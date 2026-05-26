@@ -152,3 +152,103 @@ export interface Usuario {
   email: string;
   perfil: string;
 }
+
+// ============ QUEM SOMOS ============
+export interface QuemSomos {
+  id: number;
+  titulo: string;
+  subtitulo?: string;
+  descricao: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+  criadoEm: string;
+}
+
+export interface CreateQuemSomos {
+  titulo: string;
+  subtitulo?: string;
+  descricao: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+}
+
+// ============ SOBRE DOUTORA ============
+export interface SobreDoutora {
+  id: number;
+  titulo: string;
+  subtitulo?: string;
+  descricao: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+  criadoEm: string;
+}
+
+export interface CreateSobreDoutora {
+  titulo: string;
+  subtitulo?: string;
+  descricao: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+}
+
+// ============ SERVICO ============
+export interface Servico {
+  id: number;
+  titulo: string;
+  subtitulo?: string;
+  descricao: string;
+  icone?: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+  criadoEm: string;
+}
+
+export interface CreateServico {
+  titulo: string;
+  subtitulo?: string;
+  descricao: string;
+  icone?: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+}
+
+// ============ CONFIGURACAO SITE ============
+export interface ConfiguracaoSite {
+  id: number;
+  chave: string;
+  valor: string;
+  descricao?: string;
+  atualizadoEm: string;
+}
+
+export interface CreateConfiguracaoSite {
+  chave: string;
+  valor: string;
+  descricao?: string;
+}
+
+// ============ CREATE AREA ATUACAO ============
+export interface CreateAreaAtuacao {
+  nome: string;
+  descricao: string;
+  icone?: string;
+  imagemUrl?: string;
+  ordem: number;
+  ativo: boolean;
+}
+
+// ============ CREATE DEPOIMENTO ============
+export interface CreateDepoimento {
+  nome: string;
+  texto: string;
+  avaliacao: number;
+  cargo?: string;
+  ativo: boolean;
+  ordem: number;
+}

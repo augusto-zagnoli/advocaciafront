@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AnuncioService } from '../../../core/services/anuncio.service';
-import { AreaAtuacaoService, DepoimentoService } from '../../../core/services/site.service';
-import { Anuncio, AreaAtuacao, Depoimento } from '../../../core/models/models';
+import { AreaAtuacaoService, DepoimentoService, ServicoService, QuemSomosService, SobreDoutoraService, ConfiguracaoSiteService } from '../../../core/services/site.service';
+import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } from '../../../core/models/models';
 
 @Component({
   selector: 'app-home',
@@ -163,33 +163,56 @@ import { Anuncio, AreaAtuacao, Depoimento } from '../../../core/models/models';
       <div class="container">
         <div class="row align-items-center g-5">
           <div class="col-lg-5 text-center">
-            <div class="rounded-3 bg-navy d-inline-flex align-items-center justify-content-center"
-                 style="width:280px; height:320px;">
-              <i class="bi bi-person-badge" style="font-size:7rem; color: rgba(201,160,100,0.7);"></i>
+            <div *ngIf="fotoDoutora; else placeholderFoto">
+              <img [src]="fotoDoutora" alt="Dra. Gabriela" class="rounded-3 img-fluid shadow"
+                   style="max-width:280px; max-height:350px; object-fit:cover;">
             </div>
+            <ng-template #placeholderFoto>
+              <div class="rounded-3 bg-navy d-inline-flex align-items-center justify-content-center"
+                   style="width:280px; height:320px;">
+                <i class="bi bi-person-badge" style="font-size:7rem; color: rgba(201,160,100,0.7);"></i>
+              </div>
+            </ng-template>
           </div>
           <div class="col-lg-7">
-            <p class="text-gold fw-semibold mb-2">QUEM SOU EU</p>
-            <h2 class="fw-bold text-navy mb-3">Dra. Gabriela</h2>
-            <p class="text-muted mb-3">Advogada com mais de 10 anos de experiência, especialista em diversas áreas do direito. Atuo com dedicação, comprometimento e transparência para garantir os melhores resultados para meus clientes.</p>
-            <p class="text-muted mb-4">Formada em Direito, com pós-graduação e especializações, sou comprometida com a excelência jurídica e o atendimento humanizado.</p>
-            <div class="d-flex gap-3 flex-wrap mb-4">
-              <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-check-circle-fill text-gold"></i>
-                <span class="small">Pós-graduada em Direito Civil</span>
-              </div>
-              <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-check-circle-fill text-gold"></i>
-                <span class="small">Membro da OAB</span>
-              </div>
-              <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-check-circle-fill text-gold"></i>
-                <span class="small">500+ casos concluídos</span>
-              </div>
-            </div>
+            <ng-container *ngIf="sobreDoutora; else defaultSobre">
+              <p class="text-gold fw-semibold mb-2">QUEM SOU EU</p>
+              <h2 class="fw-bold text-navy mb-3">{{ sobreDoutora.titulo }}</h2>
+              <p class="text-muted mb-3">{{ sobreDoutora.descricao }}</p>
+            </ng-container>
+            <ng-template #defaultSobre>
+              <p class="text-gold fw-semibold mb-2">QUEM SOU EU</p>
+              <h2 class="fw-bold text-navy mb-3">Dra. Gabriela</h2>
+              <p class="text-muted mb-3">Advogada com mais de 10 anos de experiência, especialista em diversas áreas do direito. Atuo com dedicação, comprometimento e transparência para garantir os melhores resultados para meus clientes.</p>
+            </ng-template>
             <a routerLink="/sobre" class="btn btn-navy">
               Conhecer Minha História <i class="bi bi-arrow-right ms-1"></i>
             </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVIÇOS -->
+    <section class="py-5" *ngIf="servicos.length > 0">
+      <div class="container">
+        <div class="text-center mb-5">
+          <p class="text-gold fw-semibold">NOSSOS SERVIÇOS</p>
+          <h2 class="fw-bold text-navy">Advocacia & Consultoria</h2>
+          <p class="text-muted">Soluções jurídicas sob medida para proteger seus interesses.</p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-6 col-lg-3" *ngFor="let servico of servicos">
+            <div class="card h-100 border-0 shadow-sm hover-card text-center">
+              <div class="card-body p-4">
+                <div class="icon-box bg-gold-light rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width:55px; height:55px;">
+                  <i class="bi {{ servico.icone || 'bi-briefcase' }} text-gold fs-4"></i>
+                </div>
+                <h6 class="fw-bold text-navy">{{ servico.titulo }}</h6>
+                <p class="small text-muted mb-0">{{ servico.descricao }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -241,11 +264,17 @@ export class HomeComponent implements OnInit {
   anuncioDestaque: Anuncio | null = null;
   areasAtuacao: AreaAtuacao[] = [];
   depoimentos: Depoimento[] = [];
+  servicos: Servico[] = [];
+  sobreDoutora: SobreDoutora | null = null;
+  fotoDoutora: string | null = null;
 
   constructor(
     private anuncioService: AnuncioService,
     private areaService: AreaAtuacaoService,
-    private depoimentoService: DepoimentoService
+    private depoimentoService: DepoimentoService,
+    private servicoService: ServicoService,
+    private sobreDoutoraService: SobreDoutoraService,
+    private configService: ConfiguracaoSiteService
   ) {}
 
   ngOnInit(): void {
@@ -259,6 +288,15 @@ export class HomeComponent implements OnInit {
     });
     this.areaService.listar().subscribe({ next: a => this.areasAtuacao = a, error: () => {} });
     this.depoimentoService.listar().subscribe({ next: d => this.depoimentos = d, error: () => {} });
+    this.servicoService.listar().subscribe({ next: s => this.servicos = s, error: () => {} });
+    this.sobreDoutoraService.listar().subscribe({
+      next: s => { if (s.length > 0) this.sobreDoutora = s[0]; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('foto_doutora').subscribe({
+      next: c => { if (c.valor) this.fotoDoutora = c.valor; },
+      error: () => {}
+    });
   }
 
   getStars(avaliacao: number): number[] {

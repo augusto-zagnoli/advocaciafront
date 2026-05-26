@@ -29,12 +29,62 @@ import { AuthService } from '../../core/services/auth.service';
               <span *ngIf="!sidebarCollapsed()">Dashboard</span>
             </a>
           </li>
+
+          <li class="nav-item px-3 mt-3 mb-1" *ngIf="!sidebarCollapsed()">
+            <small class="text-white-50 fw-semibold text-uppercase" style="font-size:.65rem; letter-spacing:1px;">Conteúdo do Site</small>
+          </li>
           <li class="nav-item">
             <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
                routerLink="/admin/anuncios" routerLinkActive="active">
               <i class="bi bi-megaphone fs-5"></i>
               <span *ngIf="!sidebarCollapsed()">Anúncios</span>
             </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
+               routerLink="/admin/areas-atuacao" routerLinkActive="active">
+              <i class="bi bi-briefcase fs-5"></i>
+              <span *ngIf="!sidebarCollapsed()">Áreas de Atuação</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
+               routerLink="/admin/servicos" routerLinkActive="active">
+              <i class="bi bi-gear fs-5"></i>
+              <span *ngIf="!sidebarCollapsed()">Serviços</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
+               routerLink="/admin/quem-somos" routerLinkActive="active">
+              <i class="bi bi-people fs-5"></i>
+              <span *ngIf="!sidebarCollapsed()">Quem Somos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
+               routerLink="/admin/sobre-doutora" routerLinkActive="active">
+              <i class="bi bi-person-badge fs-5"></i>
+              <span *ngIf="!sidebarCollapsed()">Sobre a Doutora</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
+               routerLink="/admin/depoimentos" routerLinkActive="active">
+              <i class="bi bi-chat-quote fs-5"></i>
+              <span *ngIf="!sidebarCollapsed()">Depoimentos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
+               routerLink="/admin/configuracoes" routerLinkActive="active">
+              <i class="bi bi-sliders fs-5"></i>
+              <span *ngIf="!sidebarCollapsed()">Configurações</span>
+            </a>
+          </li>
+
+          <li class="nav-item px-3 mt-3 mb-1" *ngIf="!sidebarCollapsed()">
+            <small class="text-white-50 fw-semibold text-uppercase" style="font-size:.65rem; letter-spacing:1px;">Atendimento</small>
           </li>
           <li class="nav-item">
             <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"
@@ -56,6 +106,10 @@ import { AuthService } from '../../core/services/auth.service';
               <i class="bi bi-chat-dots fs-5"></i>
               <span *ngIf="!sidebarCollapsed()">Chat</span>
             </a>
+          </li>
+
+          <li class="nav-item px-3 mt-3 mb-1" *ngIf="!sidebarCollapsed()">
+            <small class="text-white-50 fw-semibold text-uppercase" style="font-size:.65rem; letter-spacing:1px;">Conta</small>
           </li>
           <li class="nav-item">
             <a class="nav-link text-white-50 d-flex align-items-center gap-2 px-3 py-2"

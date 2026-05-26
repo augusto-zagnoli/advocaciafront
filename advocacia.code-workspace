@@ -4,10 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../Advocacia-Api/Advocacia-Api"
-		},
-		{
-			"path": "../legendarios/back/legendarios_API/legendarios_API"
+			"path": "../advocaciaback/Advocacia-Api"
 		}
 	],
 	"settings": {}
