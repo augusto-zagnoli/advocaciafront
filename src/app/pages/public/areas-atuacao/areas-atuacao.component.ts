@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AreaAtuacaoService } from '../../../core/services/site.service';
+import { AreaAtuacaoService, ConfiguracaoSiteService } from '../../../core/services/site.service';
 import { AreaAtuacao } from '../../../core/models/models';
 
 @Component({
@@ -45,7 +45,7 @@ import { AreaAtuacao } from '../../../core/models/models';
               <a routerLink="/contato" class="btn btn-navy">
                 <i class="bi bi-envelope me-2"></i>Enviar Mensagem
               </a>
-              <a href="https://wa.me/5511999990000" target="_blank" class="btn btn-success">
+              <a [href]="'https://wa.me/' + whatsappNumero" target="_blank" class="btn btn-success">
                 <i class="bi bi-whatsapp me-2"></i>WhatsApp
               </a>
             </div>
@@ -57,10 +57,18 @@ import { AreaAtuacao } from '../../../core/models/models';
 })
 export class AreasAtuacaoComponent implements OnInit {
   areas: AreaAtuacao[] = [];
+  whatsappNumero = '5511999990000';
 
-  constructor(private areaService: AreaAtuacaoService) {}
+  constructor(
+    private areaService: AreaAtuacaoService,
+    private configService: ConfiguracaoSiteService
+  ) {}
 
   ngOnInit(): void {
     this.areaService.listar().subscribe({ next: a => this.areas = a, error: () => {} });
+    this.configService.obterPorChave('telefone_whatsapp').subscribe({
+      next: c => { if (c.valor) this.whatsappNumero = c.valor; },
+      error: () => {}
+    });
   }
 }

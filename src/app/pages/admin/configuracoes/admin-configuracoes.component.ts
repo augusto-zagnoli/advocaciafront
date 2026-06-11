@@ -57,6 +57,33 @@ import { ConfiguracaoSite, CreateConfiguracaoSite } from '../../../core/models/m
         </div>
       </div>
 
+      <!-- WHATSAPP -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom">
+          <h6 class="fw-bold text-navy mb-0"><i class="bi bi-whatsapp me-2"></i>Número do WhatsApp</h6>
+        </div>
+        <div class="card-body p-4">
+          <div class="row align-items-end g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Número (DDI + DDD + número, somente dígitos)</label>
+              <input type="text" class="form-control" [value]="whatsapp" (input)="onWhatsappInput($event)"
+                     placeholder="Ex: 5511999990000" maxlength="15">
+              <small class="text-muted d-block mt-1">Esse número será usado nos botões de WhatsApp do site. Ex: 55 (Brasil) + 11 (DDD) + 999990000.</small>
+              <div class="text-danger small mt-1" *ngIf="erroWhatsapp">{{ erroWhatsapp }}</div>
+            </div>
+            <div class="col-md-6">
+              <button type="button" class="btn btn-gold" [disabled]="salvandoWhatsapp || !whatsappAlterado" (click)="salvarWhatsapp()">
+                <span *ngIf="salvandoWhatsapp" class="spinner-border spinner-border-sm me-1"></span>
+                {{ salvandoWhatsapp ? 'Salvando...' : 'Salvar Número' }}
+              </button>
+              <a *ngIf="whatsapp" [href]="'https://wa.me/' + whatsapp" target="_blank" rel="noopener" class="btn btn-outline-success ms-2">
+                <i class="bi bi-whatsapp me-1"></i>Testar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- OUTRAS CONFIGURAÇÕES -->
       <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
@@ -150,13 +177,19 @@ export class AdminConfiguracoesComponent implements OnInit {
   fotoAlterada = false;
   erroFoto = '';
 
+  salvandoWhatsapp = false;
+  whatsapp = '';
+  whatsappOriginal = '';
+  whatsappAlterado = false;
+  erroWhatsapp = '';
+
   private readonly MAX_FOTO_BYTES = 8 * 1024 * 1024;
   private readonly MAX_FOTO_DIMENSAO = 800;
 
   configForm;
 
   get configuracoesExibidas(): ConfiguracaoSite[] {
-    return this.configuracoes.filter(c => c.chave !== 'foto_doutora');
+    return this.configuracoes.filter(c => c.chave !== 'foto_doutora' && c.chave !== 'telefone_whatsapp');
   }
 
   constructor(private fb: FormBuilder, private service: ConfiguracaoSiteService) {
@@ -178,6 +211,10 @@ export class AdminConfiguracoesComponent implements OnInit {
         this.fotoDoutora = foto?.valor || '';
         this.previewFoto = this.fotoDoutora;
         this.fotoAlterada = false;
+        const wpp = items.find(c => c.chave === 'telefone_whatsapp');
+        this.whatsapp = wpp?.valor || '';
+        this.whatsappOriginal = this.whatsapp;
+        this.whatsappAlterado = false;
         this.carregando = false;
       },
       error: () => this.carregando = false
@@ -260,6 +297,38 @@ export class AdminConfiguracoesComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.erro = err.error?.message || 'Erro ao salvar a foto.';
         this.salvandoFoto = false;
+      }
+    });
+  }
+
+  onWhatsappInput(event: Event): void {
+    const valor = (event.target as HTMLInputElement).value.replace(/\D/g, '');
+    this.whatsapp = valor;
+    this.whatsappAlterado = this.whatsapp !== this.whatsappOriginal;
+    this.erroWhatsapp = '';
+  }
+
+  salvarWhatsapp(): void {
+    if (!/^\d{10,15}$/.test(this.whatsapp)) {
+      this.erroWhatsapp = 'Informe um número válido com DDI + DDD + número (10 a 15 dígitos).';
+      return;
+    }
+    this.salvandoWhatsapp = true;
+    const dto: CreateConfiguracaoSite = {
+      chave: 'telefone_whatsapp',
+      valor: this.whatsapp,
+      descricao: 'Número do WhatsApp para contato'
+    };
+    this.service.salvar(dto).subscribe({
+      next: () => {
+        this.mensagem = 'Número do WhatsApp atualizado com sucesso!';
+        this.whatsappOriginal = this.whatsapp;
+        this.whatsappAlterado = false;
+        this.salvandoWhatsapp = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        this.erro = err.error?.message || 'Erro ao salvar o número do WhatsApp.';
+        this.salvandoWhatsapp = false;
       }
     });
   }

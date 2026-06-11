@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ContatoService } from '../../../core/services/contato.service';
+import { ConfiguracaoSiteService } from '../../../core/services/site.service';
 
 @Component({
   selector: 'app-contato',
@@ -109,7 +110,7 @@ import { ContatoService } from '../../../core/services/contato.service';
               </div>
             </div>
 
-            <a href="https://wa.me/5511999990000?text=Olá! Gostaria de mais informações."
+            <a [href]="'https://wa.me/' + whatsappNumero + '?text=Olá! Gostaria de mais informações.'"
                target="_blank" class="btn btn-success w-100 mt-4 btn-lg">
               <i class="bi bi-whatsapp me-2"></i>Chamar no WhatsApp
             </a>
@@ -119,13 +120,18 @@ import { ContatoService } from '../../../core/services/contato.service';
     </section>
   `
 })
-export class ContatoComponent {
+export class ContatoComponent implements OnInit {
   form;
   enviando = false;
   sucesso = false;
   erro = '';
+  whatsappNumero = '5511999990000';
 
-  constructor(private fb: FormBuilder, private contatoService: ContatoService) {
+  constructor(
+    private fb: FormBuilder,
+    private contatoService: ContatoService,
+    private configService: ConfiguracaoSiteService
+  ) {
     this.form = this.fb.group({
       nome: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
@@ -135,6 +141,13 @@ export class ContatoComponent {
   }
 
   get f() { return this.form.controls; }
+
+  ngOnInit(): void {
+    this.configService.obterPorChave('telefone_whatsapp').subscribe({
+      next: c => { if (c.valor) this.whatsappNumero = c.valor; },
+      error: () => {}
+    });
+  }
 
   enviar(): void {
     this.sucesso = false;

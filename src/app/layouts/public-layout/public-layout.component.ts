@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { ConfiguracaoSiteService } from '../../core/services/site.service';
 
 @Component({
   selector: 'app-public-layout',
@@ -103,10 +104,21 @@ import { RouterLink, RouterOutlet } from '@angular/router';
     </footer>
 
     <!-- BOTÃO WHATSAPP -->
-    <a href="https://wa.me/5511999990000?text=Olá! Encontrei seu site e gostaria de mais informações."
+    <a [href]="'https://wa.me/' + whatsappNumero + '?text=Olá! Encontrei seu site e gostaria de mais informações.'"
        target="_blank" rel="noopener" class="whatsapp-btn" title="Fale conosco no WhatsApp">
       <i class="bi bi-whatsapp"></i>
     </a>
   `
 })
-export class PublicLayoutComponent {}
+export class PublicLayoutComponent implements OnInit {
+  whatsappNumero = '5511999990000';
+
+  constructor(private configService: ConfiguracaoSiteService) {}
+
+  ngOnInit(): void {
+    this.configService.obterPorChave('telefone_whatsapp').subscribe({
+      next: c => { if (c.valor) this.whatsappNumero = c.valor; },
+      error: () => {}
+    });
+  }
+}
