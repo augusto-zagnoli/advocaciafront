@@ -30,23 +30,22 @@ import { ConfiguracaoSite, CreateConfiguracaoSite } from '../../../core/models/m
             <div class="col-md-3 text-center">
               <div class="rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden border"
                    style="width:140px; height:140px; background:#f8f9fa;">
-                <img *ngIf="fotoDoutora" [src]="fotoDoutora" alt="Foto da Doutora"
+                <img *ngIf="previewFoto" [src]="previewFoto" alt="Foto da Doutora"
                      style="width:100%; height:100%; object-fit:cover;">
-                <i *ngIf="!fotoDoutora" class="bi bi-person-badge" style="font-size:4rem; color:#c9a064;"></i>
+                <i *ngIf="!previewFoto" class="bi bi-person-badge" style="font-size:4rem; color:#c9a064;"></i>
               </div>
             </div>
             <div class="col-md-9">
-              <form [formGroup]="fotoForm" (ngSubmit)="salvarFoto()">
-                <label class="form-label fw-semibold">URL da Foto</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" formControlName="valor" placeholder="https://exemplo.com/foto.jpg">
-                  <button type="submit" class="btn btn-gold" [disabled]="salvandoFoto">
-                    <span *ngIf="salvandoFoto" class="spinner-border spinner-border-sm me-1"></span>
-                    {{ salvandoFoto ? 'Salvando...' : 'Salvar Foto' }}
-                  </button>
-                </div>
-                <small class="text-muted">Insira a URL de uma imagem hospedada externamente</small>
-              </form>
+              <label class="form-label fw-semibold">Foto</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onFotoSelecionada($event)">
+              <small class="text-muted d-block mt-1">Formatos aceitos: JPG, PNG ou WEBP — tamanho máximo de 8MB. A imagem será redimensionada automaticamente.</small>
+              <div class="text-danger small mt-1" *ngIf="erroFoto">{{ erroFoto }}</div>
+              <div class="mt-3">
+                <button type="button" class="btn btn-gold" [disabled]="salvandoFoto || !fotoAlterada" (click)="salvarFoto()">
+                  <span *ngIf="salvandoFoto" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ salvandoFoto ? 'Salvando...' : 'Salvar Foto' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -107,10 +106,10 @@ import { ConfiguracaoSite, CreateConfiguracaoSite } from '../../../core/models/m
                     <span class="spinner-border spinner-border-sm me-2"></span>Carregando...
                   </td>
                 </tr>
-                <tr *ngIf="!carregando && configuracoes.length === 0">
+                <tr *ngIf="!carregando && configuracoesExibidas.length === 0">
                   <td colspan="5" class="text-center py-4 text-muted">Nenhuma configuração cadastrada.</td>
                 </tr>
-                <tr *ngFor="let cfg of configuracoes">
+                <tr *ngFor="let cfg of configuracoesExibidas">
                   <td><code>{{ cfg.chave }}</code></td>
                   <td class="text-truncate" style="max-width: 250px;">{{ cfg.valor }}</td>
                   <td class="small text-muted">{{ cfg.descricao }}</td>
@@ -140,12 +139,20 @@ export class AdminConfiguracoesComponent implements OnInit {
   mostrarFormConfig = false;
   mensagem = '';
   fotoDoutora = '';
+  previewFoto = '';
+  fotoAlterada = false;
+  erroFoto = '';
 
-  fotoForm;
+  private readonly MAX_FOTO_BYTES = 8 * 1024 * 1024;
+  private readonly MAX_FOTO_DIMENSAO = 800;
+
   configForm;
 
+  get configuracoesExibidas(): ConfiguracaoSite[] {
+    return this.configuracoes.filter(c => c.chave !== 'foto_doutora');
+  }
+
   constructor(private fb: FormBuilder, private service: ConfiguracaoSiteService) {
-    this.fotoForm = this.fb.group({ valor: [''] });
     this.configForm = this.fb.group({
       chave: ['', Validators.required],
       valor: ['', Validators.required],
@@ -162,10 +169,70 @@ export class AdminConfiguracoesComponent implements OnInit {
         this.configuracoes = items;
         const foto = items.find(c => c.chave === 'foto_doutora');
         this.fotoDoutora = foto?.valor || '';
-        this.fotoForm.patchValue({ valor: this.fotoDoutora });
+        this.previewFoto = this.fotoDoutora;
+        this.fotoAlterada = false;
         this.carregando = false;
       },
       error: () => this.carregando = false
+    });
+  }
+
+  async onFotoSelecionada(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.erroFoto = '';
+
+    if (!file.type.startsWith('image/')) {
+      this.erroFoto = 'Selecione um arquivo de imagem válido.';
+      input.value = '';
+      return;
+    }
+    if (file.size > this.MAX_FOTO_BYTES) {
+      this.erroFoto = 'A imagem deve ter no máximo 8MB.';
+      input.value = '';
+      return;
+    }
+
+    try {
+      this.previewFoto = await this.redimensionarImagem(file);
+      this.fotoAlterada = true;
+    } catch {
+      this.erroFoto = 'Não foi possível processar a imagem selecionada.';
+      input.value = '';
+    }
+  }
+
+  private redimensionarImagem(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > this.MAX_FOTO_DIMENSAO || height > this.MAX_FOTO_DIMENSAO) {
+            if (width > height) {
+              height = Math.round(height * (this.MAX_FOTO_DIMENSAO / width));
+              width = this.MAX_FOTO_DIMENSAO;
+            } else {
+              width = Math.round(width * (this.MAX_FOTO_DIMENSAO / height));
+              height = this.MAX_FOTO_DIMENSAO;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('Canvas não suportado')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+        img.src = reader.result as string;
+      };
+      reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+      reader.readAsDataURL(file);
     });
   }
 
@@ -173,14 +240,14 @@ export class AdminConfiguracoesComponent implements OnInit {
     this.salvandoFoto = true;
     const dto: CreateConfiguracaoSite = {
       chave: 'foto_doutora',
-      valor: this.fotoForm.value.valor || '',
-      descricao: 'URL da foto principal da Dra. Gabriela'
+      valor: this.previewFoto,
+      descricao: 'Foto principal da Dra. Gabriela'
     };
     this.service.salvar(dto).subscribe({
       next: () => {
         this.mensagem = 'Foto atualizada com sucesso!';
-        this.fotoDoutora = dto.valor;
-        this.carregar();
+        this.fotoDoutora = this.previewFoto;
+        this.fotoAlterada = false;
         this.salvandoFoto = false;
       },
       error: () => this.salvandoFoto = false
