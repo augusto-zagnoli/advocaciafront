@@ -40,8 +40,33 @@ import { AreaAtuacao, CreateAreaAtuacao } from '../../../core/models/models';
                 <div class="invalid-feedback">Nome é obrigatório</div>
               </div>
               <div class="col-md-4">
-                <label class="form-label fw-semibold">Ícone (classe Bootstrap)</label>
-                <input type="text" class="form-control" formControlName="icone" placeholder="bi-file-legal">
+                <label class="form-label fw-semibold">Ícone</label>
+                <div class="dropdown">
+                  <button class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span>
+                      <i class="bi {{ f['icone'].value || 'bi-question-circle' }} me-2 text-gold fs-5"></i>
+                      {{ f['icone'].value || 'Selecionar ícone' }}
+                    </span>
+                    <i class="bi bi-chevron-down small"></i>
+                  </button>
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 320px; overflow-y: auto;">
+                    <li>
+                      <button type="button" class="dropdown-item d-flex align-items-center gap-2" (click)="selecionarIcone('')">
+                        <i class="bi bi-slash-circle fs-5 text-muted"></i>
+                        <span class="small">Sem ícone</span>
+                      </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li *ngFor="let ic of iconesDisponiveis">
+                      <button type="button" class="dropdown-item d-flex align-items-center gap-2"
+                              [class.active]="f['icone'].value === ic"
+                              (click)="selecionarIcone(ic)">
+                        <i class="bi {{ ic }} fs-5 text-gold"></i>
+                        <span class="small">{{ ic }}</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold">Descrição *</label>
@@ -138,6 +163,16 @@ export class AdminAreasAtuacaoComponent implements OnInit {
   mensagem = '';
   form;
 
+  readonly iconesDisponiveis: string[] = [
+    'bi-people-fill', 'bi-briefcase-fill', 'bi-file-earmark-text-fill', 'bi-shield-check',
+    'bi-house-fill', 'bi-bag-check-fill', 'bi-bank', 'bi-bank2', 'bi-building', 'bi-buildings-fill',
+    'bi-cash-coin', 'bi-graph-up-arrow', 'bi-journal-text', 'bi-clipboard-check', 'bi-award-fill',
+    'bi-globe', 'bi-heart-pulse', 'bi-car-front-fill', 'bi-file-earmark-lock-fill', 'bi-bookmark-check-fill',
+    'bi-person-badge-fill', 'bi-person-vcard-fill', 'bi-hammer', 'bi-file-earmark-medical', 'bi-prescription2',
+    'bi-folder2-open', 'bi-archive-fill', 'bi-calendar-check-fill', 'bi-chat-left-text-fill',
+    'bi-megaphone-fill', 'bi-patch-check-fill', 'bi-vector-pen', 'bi-lightbulb', 'bi-gear-fill'
+  ];
+
   constructor(private fb: FormBuilder, private service: AreaAtuacaoService) {
     this.form = this.fb.group({
       nome: ['', Validators.required],
@@ -150,6 +185,10 @@ export class AdminAreasAtuacaoComponent implements OnInit {
   }
 
   get f() { return this.form.controls; }
+
+  selecionarIcone(icone: string): void {
+    this.form.get('icone')?.setValue(icone);
+  }
 
   ngOnInit(): void { this.carregar(); }
 
