@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://legendarios.cloud:5001/api'
+  apiUrl: 'https://gabrielarangeladvocacia.com.br:5001/api'
 };

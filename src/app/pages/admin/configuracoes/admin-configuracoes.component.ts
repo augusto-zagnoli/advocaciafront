@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ConfiguracaoSiteService } from '../../../core/services/site.service';
 import { ConfiguracaoSite, CreateConfiguracaoSite } from '../../../core/models/models';
@@ -18,6 +19,11 @@ import { ConfiguracaoSite, CreateConfiguracaoSite } from '../../../core/models/m
       <div class="alert alert-success alert-dismissible" *ngIf="mensagem">
         <i class="bi bi-check-circle me-2"></i>{{ mensagem }}
         <button type="button" class="btn-close" (click)="mensagem=''"></button>
+      </div>
+
+      <div class="alert alert-danger alert-dismissible" *ngIf="erro">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ erro }}
+        <button type="button" class="btn-close" (click)="erro=''"></button>
       </div>
 
       <!-- FOTO DA DOUTORA -->
@@ -138,6 +144,7 @@ export class AdminConfiguracoesComponent implements OnInit {
   salvandoConfig = false;
   mostrarFormConfig = false;
   mensagem = '';
+  erro = '';
   fotoDoutora = '';
   previewFoto = '';
   fotoAlterada = false;
@@ -250,7 +257,10 @@ export class AdminConfiguracoesComponent implements OnInit {
         this.fotoAlterada = false;
         this.salvandoFoto = false;
       },
-      error: () => this.salvandoFoto = false
+      error: (err: HttpErrorResponse) => {
+        this.erro = err.error?.message || 'Erro ao salvar a foto.';
+        this.salvandoFoto = false;
+      }
     });
   }
 
@@ -277,7 +287,10 @@ export class AdminConfiguracoesComponent implements OnInit {
         this.carregar();
         this.salvandoConfig = false;
       },
-      error: () => this.salvandoConfig = false
+      error: (err: HttpErrorResponse) => {
+        this.erro = err.error?.message || 'Erro ao salvar a configuração.';
+        this.salvandoConfig = false;
+      }
     });
   }
 
@@ -285,7 +298,9 @@ export class AdminConfiguracoesComponent implements OnInit {
     if (confirm('Deseja excluir esta configuração?')) {
       this.service.deletar(id).subscribe({
         next: () => { this.mensagem = 'Configuração excluída.'; this.carregar(); },
-        error: () => {}
+        error: (err: HttpErrorResponse) => {
+          this.erro = err.error?.message || 'Erro ao excluir a configuração.';
+        }
       });
     }
   }

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -80,8 +81,8 @@ export class LoginComponent {
     this.carregando = true;
     this.auth.login(this.form.value as any).subscribe({
       next: () => this.router.navigate(['/admin/dashboard']),
-      error: () => {
-        this.erro = 'E-mail ou senha inválidos. Verifique suas credenciais.';
+      error: (err: HttpErrorResponse) => {
+        this.erro = err.error?.message || 'E-mail ou senha inválidos. Verifique suas credenciais.';
         this.carregando = false;
       }
     });
