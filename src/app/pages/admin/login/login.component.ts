@@ -52,10 +52,6 @@ import { AuthService } from '../../../core/services/auth.service';
             {{ carregando ? 'Entrando...' : 'Entrar' }}
           </button>
         </form>
-
-        <div class="text-center mt-3">
-          <small class="text-muted">Login padrão: admin&#64;advocacia.com / Admin&#64;123</small>
-        </div>
       </div>
     </div>
   `
