@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AreaAtuacao, CreateAreaAtuacao, Depoimento, CreateDepoimento, QuemSomos, CreateQuemSomos, SobreDoutora, CreateSobreDoutora, Servico, CreateServico, ConfiguracaoSite, CreateConfiguracaoSite } from '../models/models';
+import { AreaAtuacao, CreateAreaAtuacao, Depoimento, CreateDepoimento, QuemSomos, CreateQuemSomos, SobreDoutora, CreateSobreDoutora, Servico, CreateServico, ConfiguracaoSite, CreateConfiguracaoSite, ImagemHero, CreateImagemHero } from '../models/models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -185,6 +185,39 @@ export class ConfiguracaoSiteService {
 
   salvar(dto: CreateConfiguracaoSite): Observable<ConfiguracaoSite> {
     return this.http.post<ConfiguracaoSite>(this.API, dto);
+  }
+
+  deletar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API}/${id}`);
+  }
+}
+
+@Injectable({ providedIn: 'root' })
+export class ImagemHeroService {
+  private readonly API = `${environment.apiUrl}/imagemhero`;
+
+  constructor(private http: HttpClient) {}
+
+  listar(ativo = true): Observable<ImagemHero[]> {
+    return this.http.get<ImagemHero[]>(`${this.API}?ativo=${ativo}`);
+  }
+
+  listarTodos(ativo?: boolean): Observable<ImagemHero[]> {
+    let params = new HttpParams();
+    if (ativo !== undefined) params = params.set('ativo', ativo);
+    return this.http.get<ImagemHero[]>(this.API, { params });
+  }
+
+  obterPorId(id: number): Observable<ImagemHero> {
+    return this.http.get<ImagemHero>(`${this.API}/${id}`);
+  }
+
+  criar(dto: CreateImagemHero): Observable<ImagemHero> {
+    return this.http.post<ImagemHero>(this.API, dto);
+  }
+
+  atualizar(id: number, dto: CreateImagemHero): Observable<ImagemHero> {
+    return this.http.put<ImagemHero>(`${this.API}/${id}`, dto);
   }
 
   deletar(id: number): Observable<void> {

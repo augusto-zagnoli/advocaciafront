@@ -99,6 +99,14 @@ import { AuthService } from '../../core/services/auth.service';
                 <span *ngIf="!sidebarCollapsed()">Configurações</span>
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link text-white-50 d-flex align-items-center gap-2 py-2"
+                 [class.px-3]="sidebarCollapsed()" [class.ps-4]="!sidebarCollapsed()" [class.pe-3]="!sidebarCollapsed()"
+                 routerLink="/admin/imagem-hero" routerLinkActive="active">
+                <i class="bi bi-image fs-5"></i>
+                <span *ngIf="!sidebarCollapsed()">Imagem Destaque</span>
+              </a>
+            </li>
           </ng-container>
 
           <li class="nav-item px-3 mt-3 mb-1" *ngIf="!sidebarCollapsed()">

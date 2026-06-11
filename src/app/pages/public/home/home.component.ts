@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AnuncioService } from '../../../core/services/anuncio.service';
-import { AreaAtuacaoService, DepoimentoService, ServicoService, QuemSomosService, SobreDoutoraService, ConfiguracaoSiteService } from '../../../core/services/site.service';
+import { AreaAtuacaoService, DepoimentoService, ServicoService, QuemSomosService, SobreDoutoraService, ConfiguracaoSiteService, ImagemHeroService } from '../../../core/services/site.service';
 import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } from '../../../core/models/models';
 
 @Component({
@@ -60,9 +60,11 @@ import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } fr
             </div>
           </div>
           <div class="col-lg-5 text-center">
-            <div class="hero-image-placeholder rounded-circle d-inline-flex align-items-center justify-content-center"
+            <div class="hero-image-placeholder rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden"
                  style="width:300px; height:300px; background: rgba(201,160,100,0.15); border: 3px solid rgba(201,160,100,0.3);">
-              <i class="bi bi-balance-scale" style="font-size:8rem; color: rgba(201,160,100,0.6);"></i>
+              <img *ngIf="imagemHero" [src]="imagemHero" alt="Advocacia Gabriela"
+                   style="width:100%; height:100%; object-fit:cover;">
+              <i *ngIf="!imagemHero" class="bi bi-balance-scale" style="font-size:8rem; color: rgba(201,160,100,0.6);"></i>
             </div>
           </div>
         </div>
@@ -267,6 +269,7 @@ export class HomeComponent implements OnInit {
   servicos: Servico[] = [];
   sobreDoutora: SobreDoutora | null = null;
   fotoDoutora: string | null = null;
+  imagemHero: string | null = null;
 
   constructor(
     private anuncioService: AnuncioService,
@@ -274,7 +277,8 @@ export class HomeComponent implements OnInit {
     private depoimentoService: DepoimentoService,
     private servicoService: ServicoService,
     private sobreDoutoraService: SobreDoutoraService,
-    private configService: ConfiguracaoSiteService
+    private configService: ConfiguracaoSiteService,
+    private imagemHeroService: ImagemHeroService
   ) {}
 
   ngOnInit(): void {
@@ -295,6 +299,10 @@ export class HomeComponent implements OnInit {
     });
     this.configService.obterPorChave('foto_doutora').subscribe({
       next: c => { if (c.valor) this.fotoDoutora = c.valor; },
+      error: () => {}
+    });
+    this.imagemHeroService.listar().subscribe({
+      next: items => { if (items.length > 0) this.imagemHero = items[0].imagemUrl; },
       error: () => {}
     });
   }

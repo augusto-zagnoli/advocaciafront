@@ -233,6 +233,19 @@ export interface CreateConfiguracaoSite {
   descricao?: string;
 }
 
+// ============ IMAGEM HERO ============
+export interface ImagemHero {
+  id: number;
+  imagemUrl: string;
+  ativo: boolean;
+  criadoEm: string;
+}
+
+export interface CreateImagemHero {
+  imagemUrl: string;
+  ativo: boolean;
+}
+
 // ============ CREATE AREA ATUACAO ============
 export interface CreateAreaAtuacao {
   nome: string;

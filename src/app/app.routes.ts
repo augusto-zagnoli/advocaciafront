@@ -23,6 +23,7 @@ import { AdminQuemSomosComponent } from './pages/admin/quem-somos/admin-quem-som
 import { AdminSobreDoutoraComponent } from './pages/admin/sobre-doutora/admin-sobre-doutora.component';
 import { AdminServicosComponent } from './pages/admin/servicos/admin-servicos.component';
 import { AdminConfiguracoesComponent } from './pages/admin/configuracoes/admin-configuracoes.component';
+import { AdminImagemHeroComponent } from './pages/admin/imagem-hero/admin-imagem-hero.component';
 
 export const routes: Routes = [
   {
@@ -51,6 +52,7 @@ export const routes: Routes = [
       { path: 'sobre-doutora', component: AdminSobreDoutoraComponent },
       { path: 'servicos', component: AdminServicosComponent },
       { path: 'configuracoes', component: AdminConfiguracoesComponent },
+      { path: 'imagem-hero', component: AdminImagemHeroComponent },
       { path: 'contatos', component: AdminContatosComponent },
       { path: 'orcamentos', component: AdminOrcamentosComponent },
       { path: 'chat', component: AdminChatComponent },
