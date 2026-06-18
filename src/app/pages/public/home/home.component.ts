@@ -63,7 +63,8 @@ import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } fr
             <div class="hero-image-placeholder rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden"
                  style="width:300px; height:300px; background: rgba(201,160,100,0.15); border: 3px solid rgba(201,160,100,0.3);">
               <img *ngIf="imagemHero" [src]="imagemHero" alt="Advocacia Gabriela"
-                   style="width:100%; height:100%; object-fit:cover;">
+                   style="width:100%; height:100%; object-fit:cover;"
+                   [style.object-position]="imagemHeroPosition">
               <i *ngIf="!imagemHero" class="bi bi-balance-scale" style="font-size:8rem; color: rgba(201,160,100,0.6);"></i>
             </div>
           </div>
@@ -270,6 +271,7 @@ export class HomeComponent implements OnInit {
   sobreDoutora: SobreDoutora | null = null;
   fotoDoutora: string | null = null;
   imagemHero: string | null = null;
+  imagemHeroPosition = '50% 50%';
 
   constructor(
     private anuncioService: AnuncioService,
@@ -302,7 +304,12 @@ export class HomeComponent implements OnInit {
       error: () => {}
     });
     this.imagemHeroService.listar().subscribe({
-      next: items => { if (items.length > 0) this.imagemHero = items[0].imagemUrl; },
+      next: items => {
+        if (items.length > 0) {
+          this.imagemHero = items[0].imagemUrl;
+          this.imagemHeroPosition = items[0].objectPosition || '50% 50%';
+        }
+      },
       error: () => {}
     });
   }

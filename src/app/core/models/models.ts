@@ -237,12 +237,14 @@ export interface CreateConfiguracaoSite {
 export interface ImagemHero {
   id: number;
   imagemUrl: string;
+  objectPosition: string;
   ativo: boolean;
   criadoEm: string;
 }
 
 export interface CreateImagemHero {
   imagemUrl: string;
+  objectPosition: string;
   ativo: boolean;
 }
 

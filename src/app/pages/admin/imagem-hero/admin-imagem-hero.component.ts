@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ImagemHeroService } from '../../../core/services/site.service';
@@ -19,7 +19,6 @@ import { ImagemHero, CreateImagemHero } from '../../../core/models/models';
         <i class="bi bi-check-circle me-2"></i>{{ mensagem }}
         <button type="button" class="btn-close" (click)="mensagem=''"></button>
       </div>
-
       <div class="alert alert-danger alert-dismissible" *ngIf="erro">
         <i class="bi bi-exclamation-triangle me-2"></i>{{ erro }}
         <button type="button" class="btn-close" (click)="erro=''"></button>
@@ -30,27 +29,68 @@ import { ImagemHero, CreateImagemHero } from '../../../core/models/models';
           <h6 class="fw-bold text-navy mb-0"><i class="bi bi-image me-2"></i>Imagem em Destaque</h6>
         </div>
         <div class="card-body p-4">
-          <div class="row align-items-center g-3">
-            <div class="col-md-3 text-center">
-              <div class="rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden border"
-                   style="width:140px; height:140px; background:#f8f9fa;">
-                <img *ngIf="preview" [src]="preview" alt="Imagem em Destaque"
-                     style="width:100%; height:100%; object-fit:cover;">
-                <i *ngIf="!preview" class="bi bi-balance-scale" style="font-size:4rem; color:#c9a064;"></i>
+          <div class="row g-4 align-items-start">
+
+            <!-- Prévia circular com drag -->
+            <div class="col-md-4 text-center">
+              <p class="small fw-semibold text-muted mb-2">PRÉVIA — {{ imagemExibida ? 'arraste para posicionar' : 'nenhuma imagem' }}</p>
+
+              <div class="rounded-circle overflow-hidden mx-auto border border-2"
+                   style="width:200px; height:200px; border-color:#c9a064 !important; background:#f0ede8;"
+                   [style.cursor]="imagemExibida ? (isDragging ? 'grabbing' : 'grab') : 'default'"
+                   (mousedown)="iniciarArrastar($event)">
+                <img *ngIf="imagemExibida"
+                     [src]="imagemExibida"
+                     draggable="false"
+                     style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; user-select:none;"
+                     [style.object-position]="posicaoCss">
+                <div *ngIf="!imagemExibida"
+                     class="w-100 h-100 d-flex align-items-center justify-content-center">
+                  <i class="bi bi-balance-scale" style="font-size:4rem; color:#c9a064;"></i>
+                </div>
               </div>
-            </div>
-            <div class="col-md-9">
-              <label class="form-label fw-semibold">Imagem</label>
-              <input type="file" class="form-control" accept="image/*" (change)="onImagemSelecionada($event)">
-              <small class="text-muted d-block mt-1">Formatos aceitos: JPG, PNG ou WEBP — tamanho máximo de 8MB. A imagem será redimensionada automaticamente.</small>
-              <div class="text-danger small mt-1" *ngIf="erroImagem">{{ erroImagem }}</div>
-              <div class="mt-3">
-                <button type="button" class="btn btn-gold" [disabled]="salvando || !imagemAlterada" (click)="salvar()">
-                  <span *ngIf="salvando" class="spinner-border spinner-border-sm me-1"></span>
-                  {{ salvando ? 'Salvando...' : 'Salvar Imagem' }}
+
+              <div *ngIf="imagemExibida" class="mt-3 d-flex gap-2 justify-content-center">
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="centralizar()" title="Centralizar imagem">
+                  <i class="bi bi-arrows-fullscreen me-1"></i>Centralizar
                 </button>
               </div>
+              <p *ngIf="imagemExibida" class="small text-muted mt-2 mb-0">
+                <i class="bi bi-info-circle me-1"></i>Arraste dentro do círculo para reposicionar
+              </p>
             </div>
+
+            <!-- Controles -->
+            <div class="col-md-8">
+              <div class="mb-4">
+                <label class="form-label fw-semibold">Trocar imagem (opcional)</label>
+                <input type="file" class="form-control" accept="image/*" (change)="onImagemSelecionada($event)" #fileInput>
+                <small class="text-muted d-block mt-1">
+                  Formatos aceitos: JPG, PNG ou WEBP — máximo 8MB.<br>
+                  Se apenas quiser reposicionar, arraste no círculo sem precisar trocar a imagem.
+                </small>
+                <div class="text-danger small mt-1" *ngIf="erroImagem">{{ erroImagem }}</div>
+              </div>
+
+              <div class="d-flex gap-2 flex-wrap align-items-center">
+                <button type="button" class="btn btn-gold"
+                        [disabled]="salvando || (!imagemAlterada && !posicaoAlterada)"
+                        (click)="salvar()">
+                  <span *ngIf="salvando" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ salvando ? 'Salvando...' : 'Salvar' }}
+                </button>
+                <button *ngIf="imagemAlterada" type="button" class="btn btn-outline-secondary" (click)="cancelarNovaImagem(fileInput)">
+                  Cancelar nova imagem
+                </button>
+              </div>
+
+              <div *ngIf="!imagemAtual && !imagemExibida" class="mt-3">
+                <div class="alert alert-info mb-0">
+                  <i class="bi bi-info-circle me-2"></i>Nenhuma imagem cadastrada. Selecione uma imagem para começar.
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -62,15 +102,27 @@ export class AdminImagemHeroComponent implements OnInit {
   salvando = false;
   mensagem = '';
   erro = '';
-  preview = '';
-  imagemAlterada = false;
   erroImagem = '';
   imagemAtual: ImagemHero | null = null;
 
-  private readonly MAX_IMAGEM_BYTES = 8 * 1024 * 1024;
-  private readonly MAX_IMAGEM_DIMENSAO = 800;
+  imagemExibida = '';
+  posX = 50;
+  posY = 50;
+  isDragging = false;
+  imagemAlterada = false;
+  posicaoAlterada = false;
+  private novaImagemBase64 = '';
 
-  constructor(private service: ImagemHeroService) {}
+  private readonly MAX_BYTES = 8 * 1024 * 1024;
+
+  get posicaoCss(): string {
+    return `${this.posX.toFixed(1)}% ${this.posY.toFixed(1)}%`;
+  }
+
+  constructor(
+    private service: ImagemHeroService,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit(): void { this.carregar(); }
 
@@ -79,8 +131,14 @@ export class AdminImagemHeroComponent implements OnInit {
     this.service.listarTodos().subscribe({
       next: items => {
         this.imagemAtual = items[0] || null;
-        this.preview = this.imagemAtual?.imagemUrl || '';
+        if (this.imagemAtual) {
+          this.imagemExibida = this.imagemAtual.imagemUrl;
+          const pos = this.parsearPosicao(this.imagemAtual.objectPosition);
+          this.posX = pos.x;
+          this.posY = pos.y;
+        }
         this.imagemAlterada = false;
+        this.posicaoAlterada = false;
         this.carregando = false;
       },
       error: () => this.carregando = false
@@ -99,59 +157,87 @@ export class AdminImagemHeroComponent implements OnInit {
       input.value = '';
       return;
     }
-    if (file.size > this.MAX_IMAGEM_BYTES) {
+    if (file.size > this.MAX_BYTES) {
       this.erroImagem = 'A imagem deve ter no máximo 8MB.';
       input.value = '';
       return;
     }
 
     try {
-      this.preview = await this.redimensionarImagem(file);
+      this.novaImagemBase64 = await this.lerArquivo(file);
+      this.imagemExibida = this.novaImagemBase64;
+      this.posX = 50;
+      this.posY = 50;
       this.imagemAlterada = true;
+      this.posicaoAlterada = false;
     } catch {
       this.erroImagem = 'Não foi possível processar a imagem selecionada.';
       input.value = '';
     }
   }
 
-  private redimensionarImagem(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          let { width, height } = img;
-          if (width > this.MAX_IMAGEM_DIMENSAO || height > this.MAX_IMAGEM_DIMENSAO) {
-            if (width > height) {
-              height = Math.round(height * (this.MAX_IMAGEM_DIMENSAO / width));
-              width = this.MAX_IMAGEM_DIMENSAO;
-            } else {
-              width = Math.round(width * (this.MAX_IMAGEM_DIMENSAO / height));
-              height = this.MAX_IMAGEM_DIMENSAO;
-            }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('Canvas não suportado')); return; }
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
-        };
-        img.onerror = () => reject(new Error('Falha ao carregar imagem'));
-        img.src = reader.result as string;
-      };
-      reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
-      reader.readAsDataURL(file);
-    });
+  cancelarNovaImagem(input: HTMLInputElement): void {
+    input.value = '';
+    this.novaImagemBase64 = '';
+    this.imagemAlterada = false;
+    if (this.imagemAtual) {
+      this.imagemExibida = this.imagemAtual.imagemUrl;
+      const pos = this.parsearPosicao(this.imagemAtual.objectPosition);
+      this.posX = pos.x;
+      this.posY = pos.y;
+    } else {
+      this.imagemExibida = '';
+    }
+    this.posicaoAlterada = false;
+  }
+
+  iniciarArrastar(event: MouseEvent): void {
+    if (!this.imagemExibida) return;
+    event.preventDefault();
+
+    this.isDragging = true;
+    let lastX = event.clientX;
+    let lastY = event.clientY;
+
+    const onMove = (e: MouseEvent) => {
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      this.ngZone.run(() => {
+        this.posX = Math.max(0, Math.min(100, this.posX - dx * 0.5));
+        this.posY = Math.max(0, Math.min(100, this.posY - dy * 0.5));
+        this.posicaoAlterada = true;
+      });
+    };
+
+    const onUp = () => {
+      this.isDragging = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  centralizar(): void {
+    this.posX = 50;
+    this.posY = 50;
+    this.posicaoAlterada = true;
   }
 
   salvar(): void {
+    if (!this.imagemExibida) return;
     this.salvando = true;
+
+    const imagemUrl = this.imagemAlterada ? this.novaImagemBase64 : this.imagemAtual!.imagemUrl;
     const dto: CreateImagemHero = {
-      imagemUrl: this.preview,
+      imagemUrl,
+      objectPosition: this.posicaoCss,
       ativo: true
     };
+
     const request = this.imagemAtual
       ? this.service.atualizar(this.imagemAtual.id, dto)
       : this.service.criar(dto);
@@ -159,8 +245,11 @@ export class AdminImagemHeroComponent implements OnInit {
     request.subscribe({
       next: item => {
         this.imagemAtual = item;
-        this.mensagem = 'Imagem atualizada com sucesso!';
+        this.imagemExibida = item.imagemUrl;
+        this.novaImagemBase64 = '';
         this.imagemAlterada = false;
+        this.posicaoAlterada = false;
+        this.mensagem = 'Imagem atualizada com sucesso!';
         this.salvando = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -168,5 +257,23 @@ export class AdminImagemHeroComponent implements OnInit {
         this.salvando = false;
       }
     });
+  }
+
+  private lerArquivo(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private parsearPosicao(pos?: string): { x: number; y: number } {
+    if (!pos) return { x: 50, y: 50 };
+    const parts = pos.split(' ');
+    return {
+      x: parseFloat(parts[0]) ?? 50,
+      y: parseFloat(parts[1]) ?? 50
+    };
   }
 }
