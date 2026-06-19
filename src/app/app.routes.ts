@@ -24,6 +24,7 @@ import { AdminSobreDoutoraComponent } from './pages/admin/sobre-doutora/admin-so
 import { AdminServicosComponent } from './pages/admin/servicos/admin-servicos.component';
 import { AdminConfiguracoesComponent } from './pages/admin/configuracoes/admin-configuracoes.component';
 import { AdminImagemHeroComponent } from './pages/admin/imagem-hero/admin-imagem-hero.component';
+import { AdminPaginaInicialComponent } from './pages/admin/pagina-inicial/admin-pagina-inicial.component';
 
 export const routes: Routes = [
   {
@@ -45,6 +46,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'pagina-inicial', component: AdminPaginaInicialComponent },
       { path: 'anuncios', component: AdminAnunciosComponent },
       { path: 'areas-atuacao', component: AdminAreasAtuacaoComponent },
       { path: 'depoimentos', component: AdminDepoimentosComponent },

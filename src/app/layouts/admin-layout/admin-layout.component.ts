@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfiguracaoSiteService } from '../../core/services/site.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -43,6 +44,14 @@ import { AuthService } from '../../core/services/auth.service';
             </a>
           </li>
           <ng-container *ngIf="sidebarCollapsed() || cadastrosExpanded()">
+            <li class="nav-item">
+              <a class="nav-link text-white-50 d-flex align-items-center gap-2 py-2"
+                 [class.px-3]="sidebarCollapsed()" [class.ps-4]="!sidebarCollapsed()" [class.pe-3]="!sidebarCollapsed()"
+                 routerLink="/admin/pagina-inicial" routerLinkActive="active">
+                <i class="bi bi-house-door fs-5"></i>
+                <span *ngIf="!sidebarCollapsed()">Página Inicial</span>
+              </a>
+            </li>
             <li class="nav-item">
               <a class="nav-link text-white-50 d-flex align-items-center gap-2 py-2"
                  [class.px-3]="sidebarCollapsed()" [class.ps-4]="!sidebarCollapsed()" [class.pe-3]="!sidebarCollapsed()"
@@ -165,7 +174,7 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- CONTEÚDO PRINCIPAL -->
       <div class="flex-grow-1 d-flex flex-column" style="background:#f4f6f9; min-width:0;">
         <header class="bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between shadow-sm">
-          <h6 class="mb-0 fw-bold text-navy">Sistema de Gestão — Advocacia Gabriela</h6>
+          <h6 class="mb-0 fw-bold text-navy">Sistema de Gestão — {{ nomeEscritorio }}</h6>
           <div class="d-flex align-items-center gap-3">
             <a routerLink="/" target="_blank" class="btn btn-sm btn-outline-secondary">
               <i class="bi bi-globe"></i> Ver Site
@@ -189,10 +198,20 @@ import { AuthService } from '../../core/services/auth.service';
     .sidebar .nav-link.active { color: #c9a064 !important; }
   `]
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit {
   sidebarCollapsed = signal(false);
   cadastrosExpanded = signal(true);
-  constructor(public auth: AuthService) {}
+  nomeEscritorio = '';
+
+  constructor(public auth: AuthService, private configService: ConfiguracaoSiteService) {}
+
+  ngOnInit(): void {
+    this.configService.obterPorChave('nome_doutora').subscribe({
+      next: c => { if (c.valor) this.nomeEscritorio = c.valor; },
+      error: () => {}
+    });
+  }
+
   toggleSidebar() { this.sidebarCollapsed.update(v => !v); }
   toggleCadastros() { this.cadastrosExpanded.update(v => !v); }
 }

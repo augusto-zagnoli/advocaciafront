@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfiguracaoSiteService } from '../../../core/services/site.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="text-center mb-4">
           <i class="bi bi-balance-scale text-gold" style="font-size: 3rem;"></i>
           <h4 class="fw-bold text-navy mt-2">Painel Administrativo</h4>
-          <p class="text-muted small">Advocacia Gabriela</p>
+          <p class="text-muted small">{{ nomeEscritorio }}</p>
         </div>
 
         <div class="alert alert-danger" *ngIf="erro">
@@ -56,16 +57,29 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   form;
   carregando = false;
   erro = '';
   showPass = false;
+  nomeEscritorio = '';
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+    private configService: ConfiguracaoSiteService
+  ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       senha: ['', [Validators.required]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.configService.obterPorChave('nome_doutora').subscribe({
+      next: c => { if (c.valor) this.nomeEscritorio = c.valor; },
+      error: () => {}
     });
   }
 

@@ -1,11 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ConfiguracaoSiteService } from '../../core/services/site.service';
 
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, CommonModule],
   template: `
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-navy fixed-top shadow">
@@ -13,8 +14,8 @@ import { ConfiguracaoSiteService } from '../../core/services/site.service';
         <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
           <i class="bi bi-balance-scale text-gold fs-4"></i>
           <div>
-            <div class="fw-bold lh-1">Dra. Gabriela</div>
-            <div class="small lh-1 opacity-75">Advocacia & Consultoria</div>
+            <div class="fw-bold lh-1">{{ nomeDoutora }}</div>
+            <div class="small lh-1 opacity-75">{{ subtituloEscritorio }}</div>
           </div>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
@@ -47,8 +48,8 @@ import { ConfiguracaoSiteService } from '../../core/services/site.service';
             <div class="d-flex align-items-center gap-2 mb-3">
               <i class="bi bi-balance-scale text-gold fs-4"></i>
               <div>
-                <div class="fw-bold">Dra. Gabriela</div>
-                <div class="small opacity-75">Advocacia & Consultoria</div>
+                <div class="fw-bold">{{ nomeDoutora }}</div>
+                <div class="small opacity-75">{{ subtituloEscritorio }}</div>
               </div>
             </div>
             <p class="small opacity-75">Comprometida com a defesa dos seus direitos com ética, profissionalismo e dedicação.</p>
@@ -92,8 +93,8 @@ import { ConfiguracaoSiteService } from '../../core/services/site.service';
         </div>
         <hr class="border-secondary mt-4">
         <div class="text-center small text-white-50">
-          <p class="mb-0">© 2024 Dra. Gabriela — Advocacia & Consultoria. Todos os direitos reservados.</p>
-          <p class="mb-0 mt-1">OAB/XX 000.000</p>
+          <p class="mb-0">© {{ anoAtual }} {{ nomeDoutora }} — {{ subtituloEscritorio }}. Todos os direitos reservados.</p>
+          <p class="mb-0 mt-1" *ngIf="oabNumero">{{ oabNumero }}</p>
           <p class="mb-0 mt-2">
             <a routerLink="/admin/login" class="text-white-50" style="font-size:.75rem; opacity:.5; text-decoration:none;">
               <i class="bi bi-lock me-1"></i>Área Restrita
@@ -112,12 +113,28 @@ import { ConfiguracaoSiteService } from '../../core/services/site.service';
 })
 export class PublicLayoutComponent implements OnInit {
   whatsappNumero = '5511999990000';
+  nomeDoutora = '';
+  subtituloEscritorio = '';
+  oabNumero = '';
+  anoAtual = new Date().getFullYear();
 
   constructor(private configService: ConfiguracaoSiteService) {}
 
   ngOnInit(): void {
     this.configService.obterPorChave('telefone_whatsapp').subscribe({
       next: c => { if (c.valor) this.whatsappNumero = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('nome_doutora').subscribe({
+      next: c => { if (c.valor) this.nomeDoutora = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('subtitulo_escritorio').subscribe({
+      next: c => { if (c.valor) this.subtituloEscritorio = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('oab_numero').subscribe({
+      next: c => { if (c.valor) this.oabNumero = c.valor; },
       error: () => {}
     });
   }

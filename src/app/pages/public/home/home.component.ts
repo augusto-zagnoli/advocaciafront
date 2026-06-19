@@ -45,24 +45,16 @@ import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } fr
             </ng-template>
 
             <div class="row g-3 mt-4">
-              <div class="col-4 text-center">
-                <div class="text-gold display-6 fw-bold">10+</div>
-                <div class="text-white-50 small">Anos de Experiência</div>
-              </div>
-              <div class="col-4 text-center">
-                <div class="text-gold display-6 fw-bold">500+</div>
-                <div class="text-white-50 small">Casos Resolvidos</div>
-              </div>
-              <div class="col-4 text-center">
-                <div class="text-gold display-6 fw-bold">98%</div>
-                <div class="text-white-50 small">Clientes Satisfeitos</div>
+              <div class="col-4 text-center" *ngFor="let stat of estatisticas">
+                <div class="text-gold display-6 fw-bold">{{ stat.valor }}</div>
+                <div class="text-white-50 small">{{ stat.label }}</div>
               </div>
             </div>
           </div>
           <div class="col-lg-5 text-center">
             <div class="hero-image-placeholder rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden"
                  style="width:300px; height:300px; background: rgba(201,160,100,0.15); border: 3px solid rgba(201,160,100,0.3);">
-              <img *ngIf="imagemHero" [src]="imagemHero" alt="Advocacia Gabriela"
+              <img *ngIf="imagemHero" [src]="imagemHero" [attr.alt]="nomeDoutora"
                    style="width:100%; height:100%; object-fit:cover;"
                    [style.object-position]="imagemHeroPosition">
               <i *ngIf="!imagemHero" class="bi bi-balance-scale" style="font-size:8rem; color: rgba(201,160,100,0.6);"></i>
@@ -167,7 +159,7 @@ import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } fr
         <div class="row align-items-center g-5">
           <div class="col-lg-5 text-center">
             <div *ngIf="fotoDoutora; else placeholderFoto">
-              <img [src]="fotoDoutora" alt="Dra. Gabriela" class="rounded-3 img-fluid shadow"
+              <img [src]="fotoDoutora" [attr.alt]="nomeDoutora" class="rounded-3 img-fluid shadow"
                    style="max-width:280px; max-height:350px; object-fit:cover;">
             </div>
             <ng-template #placeholderFoto>
@@ -185,7 +177,7 @@ import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } fr
             </ng-container>
             <ng-template #defaultSobre>
               <p class="text-gold fw-semibold mb-2">QUEM SOU EU</p>
-              <h2 class="fw-bold text-navy mb-3">Dra. Gabriela</h2>
+              <h2 class="fw-bold text-navy mb-3">{{ nomeDoutora }}</h2>
               <p class="text-muted mb-3">Advogada com mais de 10 anos de experiência, especialista em diversas áreas do direito. Atuo com dedicação, comprometimento e transparência para garantir os melhores resultados para meus clientes.</p>
             </ng-template>
             <a routerLink="/sobre" class="btn btn-navy">
@@ -201,7 +193,7 @@ import { Anuncio, AreaAtuacao, Depoimento, Servico, QuemSomos, SobreDoutora } fr
       <div class="container">
         <div class="text-center mb-5">
           <p class="text-gold fw-semibold">NOSSOS SERVIÇOS</p>
-          <h2 class="fw-bold text-navy">Advocacia & Consultoria</h2>
+          <h2 class="fw-bold text-navy">{{ subtituloEscritorio }}</h2>
           <p class="text-muted">Soluções jurídicas sob medida para proteger seus interesses.</p>
         </div>
         <div class="row g-4">
@@ -272,6 +264,13 @@ export class HomeComponent implements OnInit {
   fotoDoutora: string | null = null;
   imagemHero: string | null = null;
   imagemHeroPosition = '50% 50%';
+  nomeDoutora = '';
+  subtituloEscritorio = '';
+  estatisticas = [
+    { valor: '10+', label: 'Anos de Experiência' },
+    { valor: '500+', label: 'Casos Resolvidos' },
+    { valor: '98%', label: 'Clientes Satisfeitos' },
+  ];
 
   constructor(
     private anuncioService: AnuncioService,
@@ -309,6 +308,23 @@ export class HomeComponent implements OnInit {
           this.imagemHero = items[0].imagemUrl;
           this.imagemHeroPosition = items[0].objectPosition || '50% 50%';
         }
+      },
+      error: () => {}
+    });
+    this.configService.obterPorChave('nome_doutora').subscribe({
+      next: c => { if (c.valor) this.nomeDoutora = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('subtitulo_escritorio').subscribe({
+      next: c => { if (c.valor) this.subtituloEscritorio = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('hero_stats').subscribe({
+      next: c => {
+        try {
+          const parsed = JSON.parse(c.valor);
+          if (Array.isArray(parsed) && parsed.length > 0) this.estatisticas = parsed;
+        } catch { }
       },
       error: () => {}
     });

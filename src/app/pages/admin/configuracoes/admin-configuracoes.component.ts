@@ -26,6 +26,49 @@ import { ConfiguracaoSite, CreateConfiguracaoSite } from '../../../core/models/m
         <button type="button" class="btn-close" (click)="erro=''"></button>
       </div>
 
+      <!-- IDENTIDADE DO ESCRITÓRIO -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom">
+          <h6 class="fw-bold text-navy mb-0"><i class="bi bi-person-badge me-2"></i>Identidade do Escritório</h6>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Estes textos aparecem no cabeçalho, rodapé e em outras partes do site.
+          </p>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Nome da Advogada</label>
+              <input type="text" class="form-control" [value]="nomeDoutora" (input)="onNomeInput($event)" placeholder="Ex: Dra. Gabriela">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Subtítulo do Escritório</label>
+              <input type="text" class="form-control" [value]="subtituloEscritorio" (input)="onSubtituloInput($event)" placeholder="Ex: Advocacia & Consultoria">
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-gold w-100" [disabled]="salvandoIdentidade || !identidadeAlterada" (click)="salvarIdentidade()">
+                <span *ngIf="salvandoIdentidade" class="spinner-border spinner-border-sm me-1"></span>
+                {{ salvandoIdentidade ? 'Salvando...' : 'Salvar' }}
+              </button>
+            </div>
+            <div class="text-danger small" *ngIf="erroIdentidade">{{ erroIdentidade }}</div>
+          </div>
+          <div class="row g-3 align-items-end mt-1">
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Número da OAB</label>
+              <input type="text" class="form-control" [value]="oabNumero" (input)="onOabInput($event)" placeholder="Ex: OAB/SP 123.456">
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-gold w-100" [disabled]="salvandoOab || !oabAlterado" (click)="salvarOab()">
+                <span *ngIf="salvandoOab" class="spinner-border spinner-border-sm me-1"></span>
+                {{ salvandoOab ? 'Salvando...' : 'Salvar' }}
+              </button>
+            </div>
+            <div class="text-danger small" *ngIf="erroOab">{{ erroOab }}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- FOTO DA DOUTORA -->
       <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white border-bottom">
@@ -183,6 +226,20 @@ export class AdminConfiguracoesComponent implements OnInit {
   whatsappAlterado = false;
   erroWhatsapp = '';
 
+  salvandoIdentidade = false;
+  nomeDoutora = '';
+  nomeDotoraOriginal = '';
+  subtituloEscritorio = '';
+  subtituloEscritorioOriginal = '';
+  identidadeAlterada = false;
+  erroIdentidade = '';
+
+  salvandoOab = false;
+  oabNumero = '';
+  oabOriginal = '';
+  oabAlterado = false;
+  erroOab = '';
+
   private readonly MAX_FOTO_BYTES = 8 * 1024 * 1024;
   private readonly MAX_FOTO_DIMENSAO = 800;
 
@@ -215,6 +272,17 @@ export class AdminConfiguracoesComponent implements OnInit {
         this.whatsapp = wpp?.valor || '';
         this.whatsappOriginal = this.whatsapp;
         this.whatsappAlterado = false;
+        const nome = items.find(c => c.chave === 'nome_doutora');
+        this.nomeDoutora = nome?.valor || '';
+        this.nomeDotoraOriginal = this.nomeDoutora;
+        const sub = items.find(c => c.chave === 'subtitulo_escritorio');
+        this.subtituloEscritorio = sub?.valor || '';
+        this.subtituloEscritorioOriginal = this.subtituloEscritorio;
+        this.identidadeAlterada = false;
+        const oab = items.find(c => c.chave === 'oab_numero');
+        this.oabNumero = oab?.valor || '';
+        this.oabOriginal = this.oabNumero;
+        this.oabAlterado = false;
         this.carregando = false;
       },
       error: () => this.carregando = false
@@ -330,6 +398,61 @@ export class AdminConfiguracoesComponent implements OnInit {
         this.erro = err.error?.message || 'Erro ao salvar o número do WhatsApp.';
         this.salvandoWhatsapp = false;
       }
+    });
+  }
+
+  onNomeInput(event: Event): void {
+    this.nomeDoutora = (event.target as HTMLInputElement).value;
+    this.identidadeAlterada = this.nomeDoutora !== this.nomeDotoraOriginal || this.subtituloEscritorio !== this.subtituloEscritorioOriginal;
+    this.erroIdentidade = '';
+  }
+
+  onSubtituloInput(event: Event): void {
+    this.subtituloEscritorio = (event.target as HTMLInputElement).value;
+    this.identidadeAlterada = this.nomeDoutora !== this.nomeDotoraOriginal || this.subtituloEscritorio !== this.subtituloEscritorioOriginal;
+    this.erroIdentidade = '';
+  }
+
+  salvarIdentidade(): void {
+    this.salvandoIdentidade = true;
+    this.erroIdentidade = '';
+    const salvarNome = this.service.salvar({ chave: 'nome_doutora', valor: this.nomeDoutora, descricao: 'Nome exibido no cabeçalho e rodapé' });
+    const salvarSub = this.service.salvar({ chave: 'subtitulo_escritorio', valor: this.subtituloEscritorio, descricao: 'Subtítulo exibido abaixo do nome' });
+
+    salvarNome.subscribe({
+      next: () => {
+        this.nomeDotoraOriginal = this.nomeDoutora;
+        salvarSub.subscribe({
+          next: () => {
+            this.subtituloEscritorioOriginal = this.subtituloEscritorio;
+            this.identidadeAlterada = false;
+            this.mensagem = 'Identidade atualizada com sucesso!';
+            this.salvandoIdentidade = false;
+          },
+          error: () => { this.erroIdentidade = 'Erro ao salvar o subtítulo.'; this.salvandoIdentidade = false; }
+        });
+      },
+      error: () => { this.erroIdentidade = 'Erro ao salvar o nome.'; this.salvandoIdentidade = false; }
+    });
+  }
+
+  onOabInput(event: Event): void {
+    this.oabNumero = (event.target as HTMLInputElement).value;
+    this.oabAlterado = this.oabNumero !== this.oabOriginal;
+    this.erroOab = '';
+  }
+
+  salvarOab(): void {
+    this.salvandoOab = true;
+    this.erroOab = '';
+    this.service.salvar({ chave: 'oab_numero', valor: this.oabNumero, descricao: 'Número da OAB exibido no rodapé e na página Sobre' }).subscribe({
+      next: () => {
+        this.oabOriginal = this.oabNumero;
+        this.oabAlterado = false;
+        this.mensagem = 'Número da OAB atualizado com sucesso!';
+        this.salvandoOab = false;
+      },
+      error: () => { this.erroOab = 'Erro ao salvar o número da OAB.'; this.salvandoOab = false; }
     });
   }
 

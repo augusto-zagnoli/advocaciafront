@@ -15,7 +15,7 @@ import { SobreDoutora, QuemSomos } from '../../../core/models/models';
         <div class="row align-items-center">
           <div class="col">
             <p class="text-gold fw-semibold mb-2">SOBRE</p>
-            <h1 class="fw-bold display-5">Dra. Gabriela</h1>
+            <h1 class="fw-bold display-5">{{ nomeDoutora }}</h1>
             <p class="text-white-50 fs-5">Advogada comprometida com a Justiça e os seus direitos.</p>
           </div>
         </div>
@@ -28,7 +28,7 @@ import { SobreDoutora, QuemSomos } from '../../../core/models/models';
         <div class="row align-items-center g-5">
           <div class="col-lg-5 text-center">
             <div *ngIf="fotoDoutora; else placeholderFoto">
-              <img [src]="fotoDoutora" alt="Dra. Gabriela" class="rounded-3 img-fluid shadow border"
+              <img [src]="fotoDoutora" [attr.alt]="nomeDoutora" class="rounded-3 img-fluid shadow border"
                    style="max-width:300px; max-height:350px; object-fit:cover;">
             </div>
             <ng-template #placeholderFoto>
@@ -38,7 +38,7 @@ import { SobreDoutora, QuemSomos } from '../../../core/models/models';
               </div>
             </ng-template>
             <div class="mt-3">
-              <span class="badge bg-gold text-white px-3 py-2">OAB/XX 000.000</span>
+              <span *ngIf="oabNumero" class="badge bg-gold text-white px-3 py-2">{{ oabNumero }}</span>
             </div>
           </div>
           <div class="col-lg-7">
@@ -55,7 +55,7 @@ import { SobreDoutora, QuemSomos } from '../../../core/models/models';
               <p class="text-gold fw-semibold mb-2">TRAJETÓRIA PROFISSIONAL</p>
               <h2 class="fw-bold text-navy mb-4">Conectando Direito e Humanidade</h2>
               <p class="text-muted mb-3">
-                Com mais de 10 anos de experiência na advocacia, a Dra. Gabriela construiu uma trajetória marcada pelo comprometimento com os direitos dos seus clientes.
+                Com mais de 10 anos de experiência na advocacia, {{ nomeDoutora }} construiu uma trajetória marcada pelo comprometimento com os direitos dos seus clientes.
               </p>
               <p class="text-muted mb-4">
                 Sua atuação é pautada em três pilares fundamentais: transparência, ética e resultados.
@@ -133,6 +133,8 @@ export class SobreComponent implements OnInit {
   sobreDoutoras: SobreDoutora[] = [];
   quemSomos: QuemSomos[] = [];
   fotoDoutora: string | null = null;
+  nomeDoutora = '';
+  oabNumero = '';
 
   constructor(
     private sobreDoutoraService: SobreDoutoraService,
@@ -145,6 +147,14 @@ export class SobreComponent implements OnInit {
     this.quemSomosService.listar().subscribe({ next: q => this.quemSomos = q, error: () => {} });
     this.configService.obterPorChave('foto_doutora').subscribe({
       next: c => { if (c.valor) this.fotoDoutora = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('nome_doutora').subscribe({
+      next: c => { if (c.valor) this.nomeDoutora = c.valor; },
+      error: () => {}
+    });
+    this.configService.obterPorChave('oab_numero').subscribe({
+      next: c => { if (c.valor) this.oabNumero = c.valor; },
       error: () => {}
     });
   }
